@@ -14,10 +14,10 @@
     <header class="glassmorphism">
         <div class="logo">FinRelief</div>
         <nav>
-            <ul>
-                <li><a href="#dashboard">Dashboard</a></li>
+            <ul id="nav-links">
                 <li><a href="#advisor">AI Advisor</a></li>
-                <li><a href="#settings">Settings</a></li>
+                <li><button id="nav-login-btn" class="secondary-btn">Login / Sign Up</button></li>
+                <li id="nav-user-info" class="hidden">Welcome, User! <a href="#" id="logout-btn">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -58,6 +58,12 @@
                 <h3>Your Personalized Plan</h3>
                 <div id="ai-advice-content"></div>
             </div>
+            
+            <!-- Global Error Container -->
+            <div id="error-container" class="error-container hidden glassmorphism-inner">
+                <h3>Request Failed</h3>
+                <p id="error-message"></p>
+            </div>
         </section>
         
         <section class="api-status glassmorphism">
@@ -65,6 +71,47 @@
             <p id="health-status">Checking connection...</p>
         </section>
     </main>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content glassmorphism">
+            <span class="close-btn" id="close-modal">&times;</span>
+            <h2 id="auth-title">Log In</h2>
+            <form id="auth-form">
+                <div class="form-group" id="name-group" class="hidden">
+                    <label for="auth-name">Name</label>
+                    <input type="text" id="auth-name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="auth-email">Email</label>
+                    <input type="email" id="auth-email" placeholder="john@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                </div>
+                
+                <!-- Extra fields for signup -->
+                <div id="signup-extra-fields" class="hidden">
+                    <div class="form-group">
+                        <label for="auth-income">Monthly Income</label>
+                        <input type="number" id="auth-income" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-expenses">Monthly Expenses</label>
+                        <input type="number" id="auth-expenses" value="0">
+                    </div>
+                </div>
+
+                <div id="auth-error" class="auth-error hidden"></div>
+                <button type="submit" id="auth-submit-btn" class="primary-btn w-full">Log In</button>
+            </form>
+            <p class="auth-toggle">
+                <span id="auth-toggle-text">Don't have an account? </span>
+                <a href="#" id="auth-toggle-link">Sign Up</a>
+            </p>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

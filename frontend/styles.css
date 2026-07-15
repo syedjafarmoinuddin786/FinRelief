@@ -7,6 +7,7 @@
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --inner-glass: rgba(0, 0, 0, 0.2);
+    --error-color: #ef4444;
 }
 
 body {
@@ -61,6 +62,7 @@ header .logo {
 nav ul {
     list-style: none;
     display: flex;
+    align-items: center;
     gap: 2rem;
     margin: 0;
     padding: 0;
@@ -163,10 +165,6 @@ input:focus {
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
 }
 
-input::placeholder {
-    color: rgba(248, 250, 252, 0.4);
-}
-
 .primary-btn {
     padding: 1rem 2rem;
     font-size: 1.1rem;
@@ -192,6 +190,27 @@ input::placeholder {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+.secondary-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+    background: var(--accent);
+    color: var(--bg-dark);
+}
+
+.w-full {
+    width: 100%;
 }
 
 .hidden {
@@ -220,7 +239,7 @@ input::placeholder {
     100% { transform: rotate(360deg); }
 }
 
-.results-container {
+.results-container, .error-container {
     width: 100%;
     max-width: 800px;
     margin-top: 3rem;
@@ -236,6 +255,18 @@ input::placeholder {
     border-bottom: 1px solid var(--glass-border);
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
+}
+
+.error-container {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.error-container h3 {
+    color: var(--error-color);
+    margin-top: 0;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+    padding-bottom: 0.5rem;
 }
 
 #ai-advice-content {
@@ -258,17 +289,66 @@ input::placeholder {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.api-status {
-    padding: 1.5rem;
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 90%;
+    max-width: 400px;
+    padding: 2rem;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
     text-align: center;
 }
 
-.api-status h2 {
-    font-size: 1.2rem;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
+.auth-error {
+    color: var(--error-color);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 1rem;
 }
 
-.api-status p {
-    margin: 0;
+.auth-toggle {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-toggle a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
 }
