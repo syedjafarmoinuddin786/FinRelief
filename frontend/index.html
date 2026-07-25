@@ -13,6 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
+    <div class="bg-blob bg-blob--accent"></div>
+    <div class="bg-blob bg-blob--secondary"></div>
 
     <header>
         <a href="#" class="logo">FinRelief</a>
@@ -389,9 +391,9 @@
                 <h3>Draft Negotiation Letter</h3>
                 <p>Use AI to draft a letter to your lender based on this settlement.</p>
                 <div class="flex gap-2 mt-2">
-                    <button class="btn-secondary" onclick="generateLetter('professional')">Professional Tone</button>
-                    <button class="btn-secondary" onclick="generateLetter('firm')">Firm Tone</button>
-                    <button class="btn-secondary" onclick="generateLetter('conciliatory')">Conciliatory Tone</button>
+                    <button class="btn-secondary" onclick="generateLetter(event, 'professional')">Professional Tone</button>
+                    <button class="btn-secondary" onclick="generateLetter(event, 'firm')">Firm Tone</button>
+                    <button class="btn-secondary" onclick="generateLetter(event, 'conciliatory')">Conciliatory Tone</button>
                 </div>
             </div>
         </section>

@@ -313,7 +313,7 @@ function renderDashboard() {
                 <div class="flex gap-2">
                     <button class="btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.5rem;" onclick="openEditLoan(${loan.LoanID})">Edit</button>
                     <button class="btn-secondary" style="font-size:0.8rem; padding:0.2rem 0.5rem; color: var(--status-critical); border-color: var(--status-critical);" onclick="deleteLoan(${loan.LoanID})">Delete</button>
-                    <button class="btn-primary" style="font-size:0.8rem; padding:0.2rem 0.5rem;" onclick="analyzeLoan(${loan.LoanID})">Analyze</button>
+                    <button class="btn-primary" style="font-size:0.8rem; padding:0.2rem 0.5rem;" onclick="runSettlement(event, ${loan.LoanID})">Analyze</button>
                 </div>
                 </h3>
                 <p>Outstanding: $${loan.OutstandingAmount} | EMI: $${loan.EMI}</p>
@@ -423,7 +423,7 @@ function renderCharts(loansData) {
 // AI Interactions
 let currentActiveLoanId = null;
 
-async function runSettlement(loanId) {
+async function runSettlement(event, loanId) {
     currentActiveLoanId = loanId;
     showSection('ai-result-section');
     document.getElementById('ai-result-title').innerText = 'Settlement Recommendation';
@@ -431,6 +431,17 @@ async function runSettlement(loanId) {
     document.getElementById('ai-error').classList.add('hidden');
     document.getElementById('ai-content').innerHTML = '';
     document.getElementById('negotiation-actions').classList.add('hidden');
+    
+    let btn = null;
+    let originalText = '';
+    if (event && event.target) {
+        btn = event.target;
+        originalText = btn.innerText;
+        const width = btn.offsetWidth;
+        btn.style.width = width + 'px';
+        btn.innerText = '⏳';
+        btn.disabled = true;
+    }
 
     try {
         const data = await authFetch(`/loans/${loanId}/settlement-recommendation`, { method: 'POST' });
@@ -452,10 +463,15 @@ async function runSettlement(loanId) {
         document.getElementById('ai-error').classList.remove('hidden');
     } finally {
         document.getElementById('ai-loading').classList.add('hidden');
+        if (btn) {
+            btn.innerText = originalText;
+            btn.disabled = false;
+            btn.style.width = '';
+        }
     }
 }
 
-async function generateLetter(tone) {
+async function generateLetter(event, tone) {
     if (!currentActiveLoanId) return;
     
     document.getElementById('ai-result-title').innerText = `Drafting ${tone} Letter...`;
@@ -463,6 +479,17 @@ async function generateLetter(tone) {
     document.getElementById('ai-error').classList.add('hidden');
     document.getElementById('ai-content').innerHTML = '';
     document.getElementById('negotiation-actions').classList.add('hidden');
+
+    let btn = null;
+    let originalText = '';
+    if (event && event.target) {
+        btn = event.target;
+        originalText = btn.innerText;
+        const width = btn.offsetWidth;
+        btn.style.width = width + 'px';
+        btn.innerText = '⏳';
+        btn.disabled = true;
+    }
 
     try {
         const data = await authFetch(`/loans/${currentActiveLoanId}/negotiation-letter`, { 

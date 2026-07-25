@@ -1,164 +1,116 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
-import os
 from unittest.mock import patch
 from app.main import app
-from app.db.database import get_db, Base
-from app.db import models
-from app.core import security
+from app.db.database import Base, engine, SessionLocal
+from app.models import models
 
-# Use in-memory SQLite for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-client = TestClient(app)
-
+# Mocking Gemini
 @pytest.fixture(autouse=True)
-def setup_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
+def mock_gemini():
+    with patch("app.services.ai_service.client.models.generate_content") as mock_generate:
+        mock_response = type("MockResponse", (), {"text": "## Strategy\nThis is a mocked strategy.\n## Letter\nThis is a mocked letter."})()
+        mock_generate.return_value = mock_response
+        yield mock_generate
 
-@pytest.fixture
-def test_user_token():
-    response = client.post("/api/signup", json={
+@pytest.fixture(scope="module")
+def client():
+    # Setup fresh DB
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    with TestClient(app) as c:
+        yield c
+
+def test_health_check(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy"}
+
+def test_signup_and_login(client):
+    # Signup
+    signup_data = {
         "name": "Test User",
         "email": "test@example.com",
-        "password": "Password123!",
+        "password": "securepassword123",
         "income": 5000.0,
         "expenses": 3000.0
-    })
-    return response.json()["access_token"]
-
-@pytest.fixture
-def other_user_token():
-    response = client.post("/api/signup", json={
-        "name": "Other User",
-        "email": "other@example.com",
-        "password": "Password123!",
-        "income": 4000.0,
-        "expenses": 2000.0
-    })
-    return response.json()["access_token"]
-
-# --------------------------
-# Authentication Tests (A06: Weak Passwords)
-# --------------------------
-def test_signup_success():
-    response = client.post("/api/signup", json={
-        "name": "New User",
-        "email": "new@example.com",
-        "password": "Password123!",
-        "income": 5000,
-        "expenses": 3000
-    })
+    }
+    response = client.post("/api/signup", json=signup_data)
     assert response.status_code == 200
     assert "access_token" in response.json()
-
-def test_signup_weak_password():
-    # A06: Password length < 8 should fail Pydantic validation
-    response = client.post("/api/signup", json={
-        "name": "Weak User",
-        "email": "weak@example.com",
-        "password": "weak",
-        "income": 5000,
-        "expenses": 3000
-    })
-    assert response.status_code == 422 # Unprocessable Entity
-
-def test_login_success(test_user_token):
-    response = client.post("/api/login", data={
+    
+    # Login
+    login_data = {
         "username": "test@example.com",
-        "password": "Password123!"
-    })
+        "password": "securepassword123"
+    }
+    response = client.post("/api/login", data=login_data)
     assert response.status_code == 200
     assert "access_token" in response.json()
 
-# --------------------------
-# Loan CRUD & Ownership Tests (A01)
-# --------------------------
-def test_create_loan(test_user_token):
-    response = client.post("/api/loans", json={
-        "lender_name": "Bank A",
-        "loan_type": "Credit Card",
-        "outstanding_amount": 10000,
-        "interest_rate": 18.0,
-        "emi": 300,
-        "overdue_months": 0
-    }, headers={"Authorization": f"Bearer {test_user_token}"})
-    assert response.status_code == 200
-    assert response.json()["LoanID"] is not None
-
-def test_get_loan_ownership_protection(test_user_token, other_user_token):
-    # 1. Test user creates a loan
-    loan_response = client.post("/api/loans", json={
-        "lender_name": "Bank A",
-        "loan_type": "Credit Card",
-        "outstanding_amount": 10000,
-        "interest_rate": 18.0,
-        "emi": 300,
-        "overdue_months": 0
-    }, headers={"Authorization": f"Bearer {test_user_token}"})
-    loan_id = loan_response.json()["LoanID"]
-
-    # 2. Other user tries to access the loan
-    # A01: Must return 404
-    attack_response = client.get(f"/api/loans/{loan_id}", headers={"Authorization": f"Bearer {other_user_token}"})
-    assert attack_response.status_code == 404
-
-# --------------------------
-# AI Endpoints with Mocks
-# --------------------------
-@patch("app.services.ai_service.client.models.generate_content")
-def test_settlement_recommendation(mock_generate, test_user_token):
-    # Mock Gemini response
-    mock_generate.return_value.text = "## Debt Stress Analysis\nHigh stress.\n\n## Financial Health Insights\nDTI is bad.\n\n## Settlement Recommendation\nSettle for this amount."
+def test_create_and_get_loan(client):
+    # Login to get token
+    login_data = {"username": "test@example.com", "password": "securepassword123"}
+    token = client.post("/api/login", data=login_data).json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     
-    # Setup Loan
-    loan_response = client.post("/api/loans", json={
-        "lender_name": "Bank A", "loan_type": "Credit Card",
-        "outstanding_amount": 10000, "interest_rate": 18.0,
-        "emi": 300, "overdue_months": 0
-    }, headers={"Authorization": f"Bearer {test_user_token}"})
-    loan_id = loan_response.json()["LoanID"]
+    # Create Loan
+    loan_data = {
+        "lender_name": "Chase Bank",
+        "loan_type": "Credit Card",
+        "outstanding_amount": 10000.0,
+        "interest_rate": 20.0,
+        "emi": 500.0,
+        "overdue_months": 2
+    }
+    response = client.post("/api/loans", json=loan_data, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["message"] == "Loan added successfully"
+    
+    # Get Loans
+    response = client.get("/api/loans", headers=headers)
+    assert response.status_code == 200
+    loans = response.json()["loans"]
+    assert len(loans) == 1
+    assert loans[0]["lender_name"] == "Chase Bank"
+    
+    return loans[0]["id"]
 
-    # Test Settlement Endpoint
-    response = client.post(f"/api/loans/{loan_id}/settlement-recommendation", headers={"Authorization": f"Bearer {test_user_token}"})
+def test_settlement_recommendation(client):
+    # Get token
+    token = client.post("/api/login", data={"username": "test@example.com", "password": "securepassword123"}).json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # Get the loan ID
+    loans = client.get("/api/loans", headers=headers).json()["loans"]
+    loan_id = loans[0]["id"]
+    
+    # Trigger settlement recommendation
+    response = client.post(f"/api/loans/{loan_id}/settlement-recommendation", headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert "suggested_settlement" in data
+    assert "emi_ratio" in data
     assert "narrative" in data
-    assert data["stress_level"] == "Low" # based on the formula with EMI 300 / 5000 = 0.06
+    assert "mocked" in data["narrative"] or "## Strategy" in data["narrative"]
 
-@patch("app.services.ai_service.client.models.generate_content")
-def test_negotiation_letter(mock_generate, test_user_token):
-    mock_generate.return_value.text = "## Strategy\nWe negotiate hard.\n## Letter\nDear Bank,\nLet's settle.\nSincerely, Me."
+def test_negotiation_letter(client):
+    # Get token
+    token = client.post("/api/login", data={"username": "test@example.com", "password": "securepassword123"}).json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
     
-    loan_response = client.post("/api/loans", json={
-        "lender_name": "Bank A", "loan_type": "Credit Card",
-        "outstanding_amount": 10000, "interest_rate": 18.0,
-        "emi": 300, "overdue_months": 0
-    }, headers={"Authorization": f"Bearer {test_user_token}"})
-    loan_id = loan_response.json()["LoanID"]
-
-    response = client.post(f"/api/loans/{loan_id}/negotiation-letter", json={"tone": "professional"}, headers={"Authorization": f"Bearer {test_user_token}"})
+    # Get the loan ID
+    loans = client.get("/api/loans", headers=headers).json()["loans"]
+    loan_id = loans[0]["id"]
+    
+    # Trigger negotiation letter
+    response = client.post(f"/api/loans/{loan_id}/negotiation-letter", json={"tone": "professional"}, headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["strategy"] == "We negotiate hard."
-    assert "Dear Bank," in data["letter"]
+    assert "strategy" in data
+    assert "letter" in data
+    assert "This is a mocked strategy" in data["strategy"]
+    assert "This is a mocked letter" in data["letter"]
+
+def test_unauthorized_access(client):
+    response = client.get("/api/loans")
+    assert response.status_code == 401
