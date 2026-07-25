@@ -130,6 +130,19 @@
                 </div>
             </div>
 
+            <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3>Update Profile</h3>
+                <form id="profile-form" class="mt-4">
+                    <label>Full Name</label>
+                    <input type="text" id="profile-name" class="glass-input">
+                    <label>Monthly Income ($)</label>
+                    <input type="number" step="0.01" id="profile-income" class="glass-input">
+                    <label>Monthly Expenses ($)</label>
+                    <input type="number" step="0.01" id="profile-expenses" class="glass-input">
+                    <button type="submit" class="btn-primary" id="profile-btn">Save Profile</button>
+                </form>
+            </div>
+
             <div style="padding-bottom: 1rem; margin-bottom: 1rem;">
                 <h3>Change Password</h3>
                 <form id="change-password-form" class="mt-4">

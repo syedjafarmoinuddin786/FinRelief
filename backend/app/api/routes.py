@@ -578,3 +578,48 @@ async def get_loan_predictions(loan_id: int, current_user: models.User = Depends
 @router.get("/ai-history")
 async def get_ai_history(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     return crud.get_user_ai_history(db, current_user.UserID)
+
+# --------------------------
+# Missing Core Features
+# --------------------------
+import time
+from sqlalchemy import text
+
+START_TIME = time.time()
+
+@router.get("/health")
+async def health_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return {"status": "error", "database": "disconnected", "detail": str(e)}
+
+@router.get("/uptime")
+async def uptime():
+    uptime_seconds = time.time() - START_TIME
+    return {"uptime_seconds": round(uptime_seconds, 2), "status": "online"}
+
+@router.put("/profile")
+async def update_profile(req: UserProfileUpdate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Very basic profile update mock
+    if req.name:
+        current_user.Name = req.name
+    if req.income is not None:
+        current_user.MonthlyIncome = req.income
+    if req.expenses is not None:
+        current_user.MonthlyExpenses = req.expenses
+    db.commit()
+    return {"message": "Profile updated successfully"}
+
+@router.put("/profile/password")
+async def update_password(req: ChangePasswordRequest, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not crud.verify_password(req.old_password, current_user.Password):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+    crud.reset_password(db, current_user, req.new_password)
+    return {"message": "Password updated successfully"}
+
+@router.get('/profile', response_model=UserProfileResponse)
+async def get_profile(current_user: models.User = Depends(get_current_user)):
+    return current_user
+

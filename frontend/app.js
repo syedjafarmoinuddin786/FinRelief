@@ -923,3 +923,60 @@ async function sendChatMessage() {
         messagesContainer.appendChild(errDiv);
     }
 }
+
+// Settings & Profile Logic
+async function loadSettings() {
+    try {
+        const data = await authFetch('/profile');
+        document.getElementById('profile-name').value = data.Name || '';
+        document.getElementById('profile-income').value = data.MonthlyIncome || '';
+        document.getElementById('profile-expenses').value = data.MonthlyExpenses || '';
+    } catch(e) {}
+}
+
+document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('profile-name').value;
+    const income = parseFloat(document.getElementById('profile-income').value);
+    const expenses = parseFloat(document.getElementById('profile-expenses').value);
+    try {
+        await authFetch('/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ name, income, expenses })
+        });
+        const msg = document.getElementById('settings-message');
+        msg.textContent = 'Profile updated successfully!';
+        msg.style.backgroundColor = 'var(--success)';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+    } catch (error) {
+        const msg = document.getElementById('settings-message');
+        msg.textContent = error.message;
+        msg.style.backgroundColor = 'var(--status-high)';
+        msg.classList.remove('hidden');
+    }
+});
+
+document.getElementById('change-password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const old_password = document.getElementById('old-password').value;
+    const new_password = document.getElementById('new-password').value;
+    try {
+        await authFetch('/profile/password', {
+            method: 'PUT',
+            body: JSON.stringify({ old_password, new_password })
+        });
+        const msg = document.getElementById('settings-message');
+        msg.textContent = 'Password updated successfully!';
+        msg.style.backgroundColor = 'var(--success)';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3000);
+        e.target.reset();
+    } catch (error) {
+        const msg = document.getElementById('settings-message');
+        msg.textContent = error.message;
+        msg.style.backgroundColor = 'var(--status-high)';
+        msg.classList.remove('hidden');
+    }
+});
+
