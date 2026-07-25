@@ -22,6 +22,8 @@
             </div>
             <div id="nav-auth" class="hidden">
                 <button onclick="showSection('dashboard-section')" class="btn-secondary">Dashboard</button>
+                <button onclick="showSection('budget-tracker-section')" class="btn-secondary" style="margin-left: 0.5rem;">Budget</button>
+                <button onclick="showSection('library-section')" class="btn-secondary" style="margin-left: 0.5rem;">Library</button>
                 <button onclick="loadAIHistory()" class="btn-secondary" style="margin-left: 0.5rem;">AI History</button>
                 <button onclick="showSection('settings-section')" class="btn-secondary" style="margin-left: 0.5rem;">Settings</button>
                 <button onclick="loadAdmin()" id="nav-admin-btn" class="btn-secondary hidden" style="margin-left: 0.5rem; border-color: red; color: red;">Admin</button>
@@ -403,6 +405,104 @@
             </div>
         </section>
 
+        <!-- Budget Tracker Section -->
+        <section id="budget-tracker-section" class="glass-panel hidden" style="max-width: 800px; margin: 0 auto;">
+            <h2>Budget Tracker & Health Engine</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Configure your financial profile to calculate surplus metrics, stress indicators, and debt ratios.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" class="grid-responsive">
+                <!-- Form -->
+                <div>
+                    <form id="budget-form" onsubmit="handleBudgetSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Gross Monthly Income ($)</label>
+                            <input type="number" id="budget-income" class="form-input" required min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Monthly Expenses ($) - Excluding EMIs</label>
+                            <input type="number" id="budget-expenses" class="form-input" required min="0" step="0.01">
+                        </div>
+                        <button type="submit" class="btn-primary">Calculate Financial Health</button>
+                    </form>
+                </div>
+
+                <!-- Output -->
+                <div id="budget-results" style="display: none; flex-direction: column; gap: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <h3 style="color: var(--accent-cyan);">Financial Health Output</h3>
+                    <div>
+                        <p><strong>Health Score:</strong> <span id="budget-score"></span>/100</p>
+                        <p><strong>Monthly Surplus:</strong> $<span id="budget-surplus"></span></p>
+                        <p><strong>Debt Stress Level:</strong> <span id="budget-stress"></span></p>
+                        <p><strong>EMI Ratio:</strong> <span id="budget-emi-ratio"></span>%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Financial Library Section -->
+        <section id="library-section" class="glass-panel hidden" style="max-width: 800px; margin: 0 auto;">
+            <h2>Borrower Rights & Financial Library</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Equip yourself with legal guidelines and strategic payoff structures.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Debt Strategies -->
+                <div style="padding: 1rem; border-left: 4px solid var(--primary-hover); background: rgba(255,255,255,0.02);">
+                    <h3 style="margin-bottom: 1rem;">Debt Repayment Strategies: Snowball vs. Avalanche</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;" class="grid-responsive">
+                        <div>
+                            <h4 style="color: var(--accent-cyan);">1. The Debt Snowball Method</h4>
+                            <p style="font-size: 0.9rem;">List your debts from smallest balance to largest balance, regardless of interest rate. Pay minimums on all and throw all extra cash at the smallest debt.</p>
+                            <strong style="color: #10B981; font-size: 0.8rem;">✔ Best for psychological wins</strong>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--accent-rose);">2. The Debt Avalanche Method</h4>
+                            <p style="font-size: 0.9rem;">List your debts from highest interest rate to lowest interest rate. Pay minimums on all and put excess funds towards the highest interest debt.</p>
+                            <strong style="color: #10B981; font-size: 0.8rem;">✔ Best for saving the most interest money</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FDCPA Rights -->
+                <div style="padding: 1rem; border-left: 4px solid var(--accent-cyan); background: rgba(255,255,255,0.02);">
+                    <h3 style="margin-bottom: 1rem;">Fair Debt Collection Practices Act (FDCPA) Rights</h3>
+                    <ul style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); padding-left: 1.5rem;">
+                        <li><strong>Time limits:</strong> Collectors cannot contact you before 8 a.m. or after 9 p.m.</li>
+                        <li><strong>Harassment:</strong> Collectors cannot threaten violence or use profane language.</li>
+                        <li><strong>Workplace Contact:</strong> Collectors cannot call you at work if prohibited.</li>
+                        <li><strong>Written Validation:</strong> Within 5 days of contacting you, a collector must send you a written validation notice.</li>
+                    </ul>
+                </div>
+
+                <!-- Dispute Templates -->
+                <div style="padding: 1rem; border-left: 4px solid var(--accent-rose); background: rgba(255,255,255,0.02);">
+                    <h3 style="margin-bottom: 1rem;">Written Dispute Letter Templates</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">Use these pre-drafted legal templates to exercise your rights under the FDCPA.</p>
+                    
+                    <h4 style="margin-bottom: 0.5rem;">Template: Debt Validation Request Letter</h4>
+                    <pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; font-size: 0.8rem; overflow-x: auto; color: var(--text-secondary);">
+[Your Name]
+[Your Address]
+[Date]
+
+[Debt Collection Agency Name]
+[Debt Collection Agency Address]
+
+Re: Account Number [Insert Account Number]
+
+To Whom It May Concern,
+
+I am writing in response to your collection notice dated [Notice Date]. Under Section 809 of the Fair Debt Collection Practices Act (FDCPA), I request that you provide verification and validation of this debt.
+
+Please provide me with proof that I have a legal obligation to pay this debt, the complete transaction history, and verification of the original creditor.
+
+Please cease all collection activity until this debt is validated.
+
+Sincerely,
+[Your Name]
+                    </pre>
+                </div>
+            </div>
+        </section>
     </main>
 
     <div id="chatbot-container" class="chatbot-container hidden">
