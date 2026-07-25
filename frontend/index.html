@@ -3,116 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinRelief - AI Debt Relief & Financial Recovery</title>
-    <!-- Use Inter font for a modern look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <!-- Markdown parser for AI responses -->
+    <title>FinRelief - AI Debt Relief</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- A05: DOMPurify for XSS Protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-    <header class="glassmorphism">
-        <div class="logo">FinRelief</div>
+
+    <header>
+        <a href="#" class="logo">FinRelief</a>
         <nav>
-            <ul id="nav-links">
-                <li><a href="#advisor">AI Advisor</a></li>
-                <li><button id="nav-login-btn" class="secondary-btn">Login / Sign Up</button></li>
-                <li id="nav-user-info" class="hidden">Welcome, User! <a href="#" id="logout-btn">Logout</a></li>
-            </ul>
+            <div id="nav-unauth">
+                <button onclick="showSection('login-section')" class="btn-secondary">Login</button>
+            </div>
+            <div id="nav-auth" class="hidden">
+                <button onclick="showSection('dashboard-section')" class="btn-secondary">Dashboard</button>
+                <button onclick="loadAIHistory()" class="btn-secondary" style="margin-left: 0.5rem;">AI History</button>
+                <button onclick="showSection('settings-section')" class="btn-secondary" style="margin-left: 0.5rem;">Settings</button>
+                <button onclick="loadAdmin()" id="nav-admin-btn" class="btn-secondary hidden" style="margin-left: 0.5rem; border-color: red; color: red;">Admin</button>
+                <button onclick="logout()" class="btn-secondary" style="margin-left: 0.5rem;">Logout</button>
+                <button class="notification-bell" onclick="alert('You have 3 new notifications: Your AI Payment Plan is ready, Settlement recommended, Please setup 2FA.')">🔔</button>
+            </div>
         </nav>
     </header>
 
-    <main id="app-content">
-        <section class="hero glassmorphism">
-            <h1>Regain Financial Freedom with AI</h1>
-            <p>Your personalized roadmap to debt relief and wealth generation.</p>
-        </section>
-
-        <!-- AI Advisor Section -->
-        <section id="advisor" class="advisor-section glassmorphism">
-            <h2>Financial Snapshot</h2>
-            <p>Enter your details below to receive a personalized, actionable debt relief plan from our AI.</p>
-            
-            <form id="financial-form">
-                <div class="form-group">
-                    <label for="total-debt">Total Debt ($)</label>
-                    <input type="number" id="total-debt" name="total-debt" placeholder="e.g., 15000" required min="0">
-                </div>
-                <div class="form-group">
-                    <label for="monthly-income">Monthly Income ($)</label>
-                    <input type="number" id="monthly-income" name="monthly-income" placeholder="e.g., 4000" required min="0">
-                </div>
-                <div class="form-group">
-                    <label for="monthly-expenses">Monthly Expenses ($)</label>
-                    <input type="number" id="monthly-expenses" name="monthly-expenses" placeholder="e.g., 3200" required min="0">
-                </div>
-                <button type="submit" id="analyze-btn" class="primary-btn">Generate AI Plan</button>
+    <main>
+        <!-- Login Section -->
+        <section id="login-section" class="auth-container glass-panel">
+            <h2 class="text-center">Welcome Back</h2>
+            <div id="login-error" class="error-message hidden"></div>
+            <form id="login-form">
+                <label>Email</label>
+                <input type="email" id="login-email" class="glass-input" required>
+                <label>Password</label>
+                <input type="password" id="login-password" class="glass-input" required>
+                <button type="submit" class="btn-primary" id="login-btn">Login</button>
             </form>
+            <p class="text-center mt-3"><a href="#" onclick="showSection('forgot-password-section')" style="color: var(--accent); font-size: 0.9rem;">Forgot password?</a></p>
+            <p class="text-center mt-2">Don't have an account? <a href="#" onclick="showSection('signup-section')" style="color: var(--accent);">Sign up</a></p>
+        </section>
 
-            <div id="loading-spinner" class="hidden">
-                <div class="spinner"></div>
-                <p>Analyzing your financials...</p>
-            </div>
+        <!-- Forgot Password Section -->
+        <section id="forgot-password-section" class="auth-container glass-panel hidden">
+            <h2 class="text-center">Reset Password</h2>
+            <div id="forgot-error" class="error-message hidden"></div>
+            <div id="forgot-success" style="color: var(--status-low); background: rgba(34, 197, 94, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;" class="hidden"></div>
+            <form id="forgot-form">
+                <label>Email</label>
+                <input type="email" id="forgot-email" class="glass-input" required>
+                <button type="submit" class="btn-primary" id="forgot-btn">Send Reset Link</button>
+            </form>
+            <p class="text-center mt-4"><a href="#" onclick="showSection('login-section')" style="color: var(--accent);">Back to Login</a></p>
+        </section>
 
-            <div id="results-container" class="results-container hidden glassmorphism-inner">
-                <h3>Your Personalized Plan</h3>
-                <div id="ai-advice-content"></div>
+        <!-- Reset Password Section -->
+        <section id="reset-password-section" class="auth-container glass-panel hidden">
+            <h2 class="text-center">Choose New Password</h2>
+            <p class="text-center mb-4" style="color: #666; font-size: 0.9rem;">Check your email for the 6-digit code.</p>
+            <div id="reset-error" class="error-message hidden"></div>
+            <form id="reset-form">
+                <input type="hidden" id="reset-email-hidden">
+                <label>6-Digit Reset Code</label>
+                <input type="text" id="reset-code" class="glass-input" style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align: center;" required maxlength="6" pattern="\d{6}">
+                <label>New Password</label>
+                <input type="password" id="reset-password" class="glass-input" required minlength="8" pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$" title="Password must contain at least 8 characters, one letter, one number and one special character">
+                <button type="submit" class="btn-primary" id="reset-btn">Reset Password</button>
+            </form>
+            <p class="text-center mt-4"><a href="#" onclick="showSection('login-section')" style="color: var(--accent);">Cancel</a></p>
+        </section>
+
+        <!-- 2FA Verify Section -->
+        <section id="2fa-verify-section" class="auth-container glass-panel hidden">
+            <h2 class="text-center">Two-Factor Auth</h2>
+            <p class="text-center mb-4" style="color: #666; font-size: 0.9rem;">Enter the 6-digit code from your authenticator app.</p>
+            <div id="2fa-verify-error" class="error-message hidden"></div>
+            <form id="2fa-verify-form">
+                <input type="text" id="2fa-verify-code" class="glass-input" style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align: center;" required maxlength="6" pattern="\d{6}">
+                <button type="submit" class="btn-primary" id="2fa-verify-btn">Verify & Login</button>
+            </form>
+            <p class="text-center mt-4"><a href="#" onclick="showSection('login-section')" style="color: var(--accent);">Cancel</a></p>
+        </section>
+
+        <!-- Signup Section -->
+        <section id="signup-section" class="auth-container glass-panel hidden">
+            <h2 class="text-center">Create Account</h2>
+            <div id="signup-error" class="error-message hidden"></div>
+            <form id="signup-form">
+                <label>Full Name</label>
+                <input type="text" id="signup-name" class="glass-input" required>
+                <label>Email</label>
+                <input type="email" id="signup-email" class="glass-input" required>
+                <label>Password (min 8 chars, letters, numbers, symbols)</label>
+                <input type="password" id="signup-password" class="glass-input" required minlength="8" pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$" title="Password must contain at least 8 characters, one letter, one number and one special character">
+                <label>Monthly Income ($)</label>
+                <input type="number" id="signup-income" class="glass-input" required min="1">
+                <label>Monthly Expenses ($)</label>
+                <input type="number" id="signup-expenses" class="glass-input" required min="0">
+                <button type="submit" class="btn-primary" id="signup-btn">Sign Up</button>
+            </form>
+            <p class="text-center mt-4">Already have an account? <a href="#" onclick="showSection('login-section')" style="color: var(--accent);">Login</a></p>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="auth-container glass-panel hidden" style="max-width: 500px;">
+            <div class="flex justify-between align-center mb-4">
+                <h2>Account Settings</h2>
+                <button onclick="showSection('dashboard-section')" class="btn-secondary">Back</button>
             </div>
             
-            <!-- Global Error Container -->
-            <div id="error-container" class="error-container hidden glassmorphism-inner">
-                <h3>Request Failed</h3>
-                <p id="error-message"></p>
+            <div id="settings-message" class="hidden" style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;"></div>
+            
+            <div style="border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3>Preferences</h3>
+                <div class="flex justify-between align-center mt-4">
+                    <label style="margin: 0; font-size: 1rem; color: var(--text-light);">Dark Mode</label>
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                        <input type="checkbox" id="theme-toggle" onchange="toggleTheme()" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--glass-border); transition: .4s; border-radius: 20px;"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3>Change Password</h3>
+                <form id="change-password-form" class="mt-4">
+                    <label>Old Password</label>
+                    <input type="password" id="old-password" class="glass-input" required>
+                    <label>New Password (min 8 chars, symbols)</label>
+                    <input type="password" id="new-password" class="glass-input" required minlength="8" pattern="^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$">
+                    <button type="submit" class="btn-primary" id="change-pwd-btn">Update Password</button>
+                </form>
             </div>
         </section>
-        
-        <section class="api-status glassmorphism">
-            <h2>Backend API Status</h2>
-            <p id="health-status">Checking connection...</p>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="hidden">
+            <div class="flex justify-between align-center mb-4">
+                <h2>Your Financial Dashboard</h2>
+                <button onclick="openAddLoan()" class="btn-primary" style="width: auto;">+ Add Loan</button>
+            </div>
+
+            <!-- Financial Summary Cards -->
+            <div class="summary-grid" id="dashboard-summary">
+                <div class="summary-card">
+                    <h4>Total Debt</h4>
+                    <p class="value" id="summary-total-debt">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Monthly EMI</h4>
+                    <p class="value" id="summary-total-emi">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Total Interest (Est.)</h4>
+                    <p class="value" id="summary-total-interest">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Monthly Surplus</h4>
+                    <p class="value" id="summary-monthly-surplus">$0.00</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Active / Overdue</h4>
+                    <p class="value" id="summary-loan-counts">0 / 0</p>
+                </div>
+                <div class="summary-card">
+                    <h4>Stress Level</h4>
+                    <p class="value" id="summary-stress-level" style="font-size: 1.4rem;">Unknown</p>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="mb-4 text-center">Debt Distribution</h3>
+                    <canvas id="debtDistributionChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="mb-4 text-center">Monthly Cash Flow</h3>
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="mb-4 text-center">EMI Breakdown</h3>
+                    <canvas id="emiBreakdownChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="mb-4 text-center">Loan Status</h3>
+                    <canvas id="loanStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Payoff Planner Section -->
+            <div class="glass-panel mt-4 mb-4">
+                <div class="flex justify-between align-center mb-4">
+                    <h3>AI Payoff Planner</h3>
+                    <button class="btn-primary" style="width: auto; padding: 0.3rem 0.8rem; font-size: 0.9rem;" onclick="loadPayoffPlanner()">Run Planner</button>
+                </div>
+                <div id="payoff-planner-content" class="dashboard-grid">
+                    <p class="text-muted">Click "Run Planner" to simulate Snowball vs Avalanche payoff strategies using your current monthly surplus.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid mt-4">
+                <!-- Left Col: Profile & 2FA -->
+                <div>
+                    <div class="glass-panel mb-4">
+                        <div class="flex justify-between align-center mb-4">
+                            <h3>Financial Profile</h3>
+                            <button class="btn-secondary" onclick="loadEditProfile()" style="font-size:0.8rem; padding:0.3rem 0.6rem;">Edit</button>
+                        </div>
+                        <div id="profile-content">Loading...</div>
+                    </div>
+
+                    <div class="glass-panel mb-4">
+                        <div class="flex justify-between align-center">
+                            <h3>Security Settings</h3>
+                            <button id="enable-2fa-btn" class="btn-secondary" onclick="setup2FA()" style="font-size:0.8rem; padding:0.3rem 0.6rem;">Enable 2FA</button>
+                        </div>
+                        <div id="2fa-setup-area" class="hidden mt-4 text-center">
+                            <p style="font-size:0.9rem; margin-bottom:0.5rem;">1. Scan this QR code with your Authenticator App</p>
+                            <img id="2fa-qr-code" src="" alt="2FA QR Code" style="max-width: 200px; border-radius: 8px; margin: 0 auto;">
+                            <p style="font-size:0.9rem; margin-top:0.5rem; margin-bottom:0.5rem;">2. Enter the 6-digit code to confirm</p>
+                            <div class="flex gap-2 justify-center mt-2">
+                                <input type="text" id="2fa-setup-code" class="glass-input" style="width: 150px; text-align: center; letter-spacing: 2px;" placeholder="000000" maxlength="6">
+                                <button class="btn-primary" style="width: auto;" onclick="confirm2FA()">Verify</button>
+                            </div>
+                            <div id="2fa-setup-error" class="error-message hidden mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Col: Loans Table -->
+                <div>
+                    <div class="glass-panel">
+                        <div class="flex justify-between align-center">
+                            <h3>Your Loans</h3>
+                            <div class="flex gap-2">
+                                <button class="btn-secondary" style="padding:0.3rem 0.6rem; font-size: 0.8rem;" onclick="exportCSV()">Export CSV</button>
+                                <input type="text" id="loan-search" class="glass-input" placeholder="Search loans..." style="margin:0; padding:0.3rem 0.6rem; width:150px;" oninput="renderDashboard()">
+                                <select id="loan-filter-status" class="glass-input" style="margin:0; padding:0.3rem 0.6rem; width:100px;" onchange="renderDashboard()">
+                                    <option value="">All</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Settled">Settled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="loans-container" class="mt-4">Loading loans...</div>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <!-- Edit Profile Section -->
+        <section id="edit-profile-section" class="auth-container glass-panel hidden" style="max-width: 600px;">
+            <div class="flex justify-between align-center mb-4">
+                <h2>Edit Profile</h2>
+                <button onclick="showSection('dashboard-section')" class="btn-secondary">Back</button>
+            </div>
+            <div id="profile-error" class="error-message hidden"></div>
+            <form id="edit-profile-form">
+                <label>Full Name</label>
+                <input type="text" id="prof-name" class="glass-input" required>
+                <label>Monthly Income ($)</label>
+                <input type="number" id="prof-income" class="glass-input" required min="1">
+                <label>Monthly Expenses ($)</label>
+                <input type="number" id="prof-expenses" class="glass-input" required min="0">
+                <label>Savings ($)</label>
+                <input type="number" id="prof-savings" class="glass-input" min="0">
+                <label>Credit Score</label>
+                <input type="number" id="prof-credit" class="glass-input" min="300" max="850">
+                <label>Employment Status</label>
+                <select id="prof-employment" class="glass-input">
+                    <option value="Employed">Employed</option>
+                    <option value="Self-Employed">Self-Employed</option>
+                    <option value="Unemployed">Unemployed</option>
+                    <option value="Retired">Retired</option>
+                </select>
+                <label>Financial Goals</label>
+                <textarea id="prof-goals" class="glass-input" rows="3" placeholder="e.g., Pay off credit card, Save for a house"></textarea>
+                <button type="submit" class="btn-primary mt-4" id="save-profile-btn">Save Profile</button>
+            </form>
+        </section>
+
+        <!-- Add Loan Section -->
+        <section id="add-loan-section" class="auth-container glass-panel hidden">
+            <h2 class="text-center" id="loan-form-title">Add New Loan</h2>
+            <div id="loan-error" class="error-message hidden"></div>
+            <form id="add-loan-form">
+                <input type="hidden" id="loan-id-hidden">
+                <label>Lender Name</label>
+                <select id="loan-lender" class="glass-input" required>
+                    <option value="" disabled selected>Select a Lender</option>
+                    <option value="Chase">Chase</option>
+                    <option value="Bank of America">Bank of America</option>
+                    <option value="Wells Fargo">Wells Fargo</option>
+                    <option value="Citi">Citi</option>
+                    <option value="Capital One">Capital One</option>
+                    <option value="Discover">Discover</option>
+                    <option value="American Express">American Express</option>
+                    <option value="US Bank">US Bank</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="loan-lender-other" class="glass-input hidden" placeholder="Enter custom lender name" style="margin-top: 0.5rem; margin-bottom: 1rem;">
+                <label>Loan Type</label>
+                <select id="loan-type" class="glass-input" required>
+                    <option value="" disabled selected>Select a Loan Type</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Personal Loan">Personal Loan</option>
+                    <option value="Mortgage">Mortgage</option>
+                    <option value="Auto Loan">Auto Loan</option>
+                    <option value="Student Loan">Student Loan</option>
+                    <option value="Medical Debt">Medical Debt</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="loan-type-other" class="glass-input hidden" placeholder="Enter custom loan type" style="margin-top: 0.5rem; margin-bottom: 1rem;">
+                <label>Outstanding Amount ($)</label>
+                <input type="number" id="loan-amount" class="glass-input" required min="1">
+                <label>Interest Rate (%)</label>
+                <input type="number" id="loan-rate" step="0.1" class="glass-input" required min="0">
+                <label>Monthly EMI ($)</label>
+                <input type="number" id="loan-emi" class="glass-input" required min="0">
+                <label>Overdue Months</label>
+                <input type="number" id="loan-overdue" class="glass-input" required min="0">
+                
+                <div class="flex gap-2 mb-4">
+                    <div style="flex: 1;">
+                        <label>Start Date</label>
+                        <input type="date" id="loan-start" class="glass-input">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Due Date</label>
+                        <input type="date" id="loan-due" class="glass-input">
+                    </div>
+                </div>
+
+                <label>Status</label>
+                <select id="loan-status" class="glass-input">
+                    <option value="Active">Active</option>
+                    <option value="Settled">Settled</option>
+                    <option value="Closed">Closed</option>
+                </select>
+                
+                <div class="flex gap-2 mt-4">
+                    <button type="button" class="btn-secondary" onclick="showSection('dashboard-section')">Cancel</button>
+                    <button type="submit" class="btn-primary" id="loan-btn">Save Loan</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Settlement & Negotiation Result Section -->
+        <section id="ai-result-section" class="glass-panel hidden" style="max-width: 800px; margin: 0 auto;">
+            <div class="flex justify-between mb-4">
+                <h2 id="ai-result-title">AI Analysis</h2>
+                <button class="btn-secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
+            </div>
+            
+            <div id="ai-loading" class="hidden text-center py-4">
+                <div class="spinner mb-2"></div>
+                <p>Generating personalized AI advice...</p>
+            </div>
+            
+            <div id="ai-error" class="error-message hidden"></div>
+            
+            <div id="ai-content" class="markdown-content"></div>
+            
+            <!-- Negotiation Actions -->
+            <div id="negotiation-actions" class="hidden mt-4 pt-4" style="border-top: 1px solid var(--glass-border);">
+                <h3>Draft Negotiation Letter</h3>
+                <p>Use AI to draft a letter to your lender based on this settlement.</p>
+                <div class="flex gap-2 mt-2">
+                    <button class="btn-secondary" onclick="generateLetter('professional')">Professional Tone</button>
+                    <button class="btn-secondary" onclick="generateLetter('firm')">Firm Tone</button>
+                    <button class="btn-secondary" onclick="generateLetter('conciliatory')">Conciliatory Tone</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI History Section -->
+        <section id="ai-history-section" class="hidden">
+            <div class="flex justify-between align-center mb-4">
+                <h2>AI History & Analytics</h2>
+                <button onclick="showSection('dashboard-section')" class="btn-secondary">Back to Dashboard</button>
+            </div>
+            <div class="glass-panel">
+                <div id="ai-history-container">Loading history...</div>
+            </div>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin-section" class="glass-panel hidden" style="max-width: 800px; margin: 0 auto;">
+            <div class="flex justify-between align-center mb-4">
+                <h2 style="color: red;">Admin Dashboard</h2>
+                <button onclick="showSection('dashboard-section')" class="btn-secondary">Back to App</button>
+            </div>
+            <div class="dashboard-grid" id="admin-stats-container">
+                Loading admin stats...
+            </div>
+        </section>
+
     </main>
 
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content glassmorphism">
-            <span class="close-btn" id="close-modal">&times;</span>
-            <h2 id="auth-title">Log In</h2>
-            <form id="auth-form">
-                <div class="form-group" id="name-group" class="hidden">
-                    <label for="auth-name">Name</label>
-                    <input type="text" id="auth-name" placeholder="John Doe">
-                </div>
-                <div class="form-group">
-                    <label for="auth-email">Email</label>
-                    <input type="email" id="auth-email" placeholder="john@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="auth-password">Password</label>
-                    <input type="password" id="auth-password" placeholder="••••••••" required>
-                </div>
-                
-                <!-- Extra fields for signup -->
-                <div id="signup-extra-fields" class="hidden">
-                    <div class="form-group">
-                        <label for="auth-income">Monthly Income</label>
-                        <input type="number" id="auth-income" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="auth-expenses">Monthly Expenses</label>
-                        <input type="number" id="auth-expenses" value="0">
-                    </div>
-                </div>
-
-                <div id="auth-error" class="auth-error hidden"></div>
-                <button type="submit" id="auth-submit-btn" class="primary-btn w-full">Log In</button>
-            </form>
-            <p class="auth-toggle">
-                <span id="auth-toggle-text">Don't have an account? </span>
-                <a href="#" id="auth-toggle-link">Sign Up</a>
-            </p>
+    <div id="chatbot-container" class="chatbot-container hidden">
+        <div class="chatbot-header">
+            <h3>FinRelief AI Advisor</h3>
+            <button onclick="toggleChatbot()">✕</button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="chat-msg bot-msg">Hello! I am your AI financial advisor. How can I help you today?</div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input-field" placeholder="Ask a question..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()" class="btn-primary" style="width: auto; padding: 0.5rem 1rem;">Send</button>
         </div>
     </div>
+    <button id="chatbot-toggle-btn" class="chatbot-toggle-btn" onclick="toggleChatbot()">💬</button>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>
