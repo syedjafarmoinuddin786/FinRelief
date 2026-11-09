@@ -4,6 +4,20 @@ FinRelief is a comprehensive, full-stack financial advisory and debt management 
 
 ---
 
+## 🎓 Summer Internship Submission Deliverables (1-Click Downloads)
+
+All formal evaluation documents and presentation slides prepared for the **Summer Internship Submission** are available directly in this repository:
+
+| Deliverable Type | Format | Direct Download / View Links | Description |
+| :--- | :--- | :--- | :--- |
+| **Internship Presentation (PPT)** | `.pptx` (PowerPoint) | [📥 Download Presentation (.pptx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Presentation.pptx) | Complete 15-slide formal internship presentation covering problem, architecture, AI engine, and results. |
+| **Internship Presentation (PDF)** | `.pdf` (Slide Deck) | [📄 View / Download Presentation (.pdf)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Presentation.pdf) | High-resolution slide deck ready for instant PDF submission. |
+| **Internship Documentation (Doc)** | `.docx` (Word) | [📥 Download Documentation (.docx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Documentation.docx) | Comprehensive formal internship project report formatted to university academic standards. |
+| **Internship Documentation (PDF)** | `.pdf` (Print-Ready) | [📄 View / Download Documentation (.pdf)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Documentation.pdf) | Official compiled project documentation report with title page, abstract, and chapters 1–10. |
+| **QA & Verification Report** | `.md` / `.html` | [🧪 View QA & Testing Report](FinRelief_QA_and_Testing_Report.md) | Empirical test matrix, 100% test pass verification, and latency benchmarks. |
+
+---
+
 ## 👨‍💻 Developer & Author
 
 **Syed Jafar Moinuddin**
