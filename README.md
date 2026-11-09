@@ -10,11 +10,12 @@ All formal evaluation documents and presentation slides prepared for the **Summe
 
 | Deliverable Type | Format | Direct Download / View Links | Description |
 | :--- | :--- | :--- | :--- |
-| **Internship Presentation (PPT)** | `.pptx` (PowerPoint) | [📥 Download Presentation (.pptx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Presentation.pptx) | Complete 15-slide formal internship presentation covering problem, architecture, AI engine, and results. |
-| **Internship Presentation (PDF)** | `.pdf` (Slide Deck) | [📄 View / Download Presentation (.pdf)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Presentation.pdf) | High-resolution slide deck ready for instant PDF submission. |
+| **Project Review Deck v2 (Recommended)** | `.pptx` (PowerPoint) | [📥 Download Review Deck v2 (.pptx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Project_Review_v2.pptx) | Tighter, high-contrast 10-slide deck with verified empirical metrics, worked INR examples, and clean UI screenshots. |
+| **Project Review Deck v2 (PDF)** | `.pdf` (Slide Deck) | [📄 View Review Deck v2 (.pdf)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Project_Review_v2.pdf) | Print-ready slide deck formatted for evaluation panels and presentations. |
+| **Internship Presentation v1 (PPT)** | `.pptx` (PowerPoint) | [📥 Download Presentation v1 (.pptx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Presentation.pptx) | Original 15-slide comprehensive internship presentation. |
 | **Internship Documentation (Doc)** | `.docx` (Word) | [📥 Download Documentation (.docx)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Documentation.docx) | Comprehensive formal internship project report formatted to university academic standards. |
 | **Internship Documentation (PDF)** | `.pdf` (Print-Ready) | [📄 View / Download Documentation (.pdf)](https://raw.githubusercontent.com/syedjafarmoinuddin786/FinRelief/main/Internship_Deliverables/FinRelief_Summer_Internship_Documentation.pdf) | Official compiled project documentation report with title page, abstract, and chapters 1–10. |
-| **QA & Verification Report** | `.md` / `.html` | [🧪 View QA & Testing Report](FinRelief_QA_and_Testing_Report.md) | Empirical test matrix, 100% test pass verification, and latency benchmarks. |
+| **QA & Verification Report** | `.md` / `.html` | [🧪 View QA & Testing Report](FinRelief_QA_and_Testing_Report.md) | Empirical test matrix, real measured benchmarks, and security verification. |
 
 ---
 

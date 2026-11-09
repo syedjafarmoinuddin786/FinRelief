@@ -3,7 +3,11 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch
 from app.main import app
 from app.db.database import Base, engine, SessionLocal
-from app.models import models
+from app.db import models
+from app.api.routes import limiter
+
+# Disable rate limiting for testing
+limiter.enabled = False
 
 # Mocking Gemini
 @pytest.fixture(autouse=True)
@@ -31,7 +35,7 @@ def test_signup_and_login(client):
     signup_data = {
         "name": "Test User",
         "email": "test@example.com",
-        "password": "securepassword123",
+        "password": "SecurePassword123!",
         "income": 5000.0,
         "expenses": 3000.0
     }
@@ -42,7 +46,7 @@ def test_signup_and_login(client):
     # Login
     login_data = {
         "username": "test@example.com",
-        "password": "securepassword123"
+        "password": "SecurePassword123!"
     }
     response = client.post("/api/login", data=login_data)
     assert response.status_code == 200
@@ -50,7 +54,7 @@ def test_signup_and_login(client):
 
 def test_create_and_get_loan(client):
     # Login to get token
-    login_data = {"username": "test@example.com", "password": "securepassword123"}
+    login_data = {"username": "test@example.com", "password": "SecurePassword123!"}
     token = client.post("/api/login", data=login_data).json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     
@@ -65,25 +69,26 @@ def test_create_and_get_loan(client):
     }
     response = client.post("/api/loans", json=loan_data, headers=headers)
     assert response.status_code == 200
-    assert response.json()["message"] == "Loan added successfully"
+    created_loan = response.json()
+    assert created_loan["LenderName"] == "Chase Bank"
     
     # Get Loans
     response = client.get("/api/loans", headers=headers)
     assert response.status_code == 200
-    loans = response.json()["loans"]
+    loans = response.json()
     assert len(loans) == 1
-    assert loans[0]["lender_name"] == "Chase Bank"
+    assert loans[0]["LenderName"] == "Chase Bank"
     
-    return loans[0]["id"]
+    return loans[0]["LoanID"]
 
 def test_settlement_recommendation(client):
     # Get token
-    token = client.post("/api/login", data={"username": "test@example.com", "password": "securepassword123"}).json()["access_token"]
+    token = client.post("/api/login", data={"username": "test@example.com", "password": "SecurePassword123!"}).json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     
     # Get the loan ID
-    loans = client.get("/api/loans", headers=headers).json()["loans"]
-    loan_id = loans[0]["id"]
+    loans = client.get("/api/loans", headers=headers).json()
+    loan_id = loans[0]["LoanID"]
     
     # Trigger settlement recommendation
     response = client.post(f"/api/loans/{loan_id}/settlement-recommendation", headers=headers)
@@ -95,12 +100,12 @@ def test_settlement_recommendation(client):
 
 def test_negotiation_letter(client):
     # Get token
-    token = client.post("/api/login", data={"username": "test@example.com", "password": "securepassword123"}).json()["access_token"]
+    token = client.post("/api/login", data={"username": "test@example.com", "password": "SecurePassword123!"}).json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     
     # Get the loan ID
-    loans = client.get("/api/loans", headers=headers).json()["loans"]
-    loan_id = loans[0]["id"]
+    loans = client.get("/api/loans", headers=headers).json()
+    loan_id = loans[0]["LoanID"]
     
     # Trigger negotiation letter
     response = client.post(f"/api/loans/{loan_id}/negotiation-letter", json={"tone": "professional"}, headers=headers)
@@ -114,3 +119,4 @@ def test_negotiation_letter(client):
 def test_unauthorized_access(client):
     response = client.get("/api/loans")
     assert response.status_code == 401
+
